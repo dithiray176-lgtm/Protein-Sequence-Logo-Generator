@@ -3,6 +3,15 @@ Protein sequence analysis and visualization tool using Biopython
 # 🧬 Protein Sequence Logo Generator
 
 A web-based bioinformatics application that analyzes aligned protein sequences and generates sequence logos to visualize amino acid frequency, conservation and information content at each position.
+## 🌐 Live Web Application
+
+Try the application here:
+
+[Protein Sequence Logo Generator](https://protein-sequence-logo-generator.streamlit.app/)
+
+Upload aligned protein sequences in FASTA format to calculate amino acid frequencies, information content and generate downloadable sequence logos.
+
+---
 
 ## 📌 Project Overview
 
