@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -94,8 +92,15 @@ if uploaded_file is not None:
 
             display_frequency = frequency_matrix.copy()
             display_frequency.index = range(1, sequence_length + 1)
+            information_df = pd.DataFrame({
+    "Position": range(1, sequence_length + 1),
+    "Information Content (bits)": information
+})
 
-            st.dataframe(display_frequency)
+st.dataframe(
+    information_df,
+    hide_index=True
+)
 
             # Probability calculation
 
@@ -131,29 +136,58 @@ if uploaded_file is not None:
                 axis=0
             )
 
-            st.subheader("Information Content")
+           st.subheader("Information Content")
 
-            information_df = pd.DataFrame({
-                "Position": range(1, sequence_length + 1),
-                "Information Content (bits)": information
-            })
+information_df = pd.DataFrame({
+    "Position": range(1, sequence_length + 1),
+    "Information Content (bits)": information
+})
 
-            st.dataframe(information_df)
+st.dataframe(information_df, hide_index=True)
 
             # Sequence logo visualization
 
-            st.subheader("Generated Protein Sequence Logo")
+st.subheader("Generated Protein Sequence Logo")
 
             fig, ax = plt.subplots(
                 figsize=(max(12, sequence_length * 0.8), 6)
             )
 
-            logo = logomaker.Logo(
-                logo_matrix,
-                ax=ax,
-                color_scheme="chemistry"
-            )
+            amino_acid_colors = {
+    # Hydrophobic
+    'A': '#808080',
+    'V': '#808080',
+    'L': '#808080',
+    'I': '#808080',
+    'M': '#808080',
+    'F': '#808080',
+    'W': '#808080',
+    'P': '#808080',
 
+    # Polar
+    'S': '#2CA02C',
+    'T': '#2CA02C',
+    'N': '#2CA02C',
+    'Q': '#2CA02C',
+    'C': '#2CA02C',
+    'Y': '#2CA02C',
+    'G': '#2CA02C',
+
+    # Positively charged
+    'K': '#1F77B4',
+    'R': '#1F77B4',
+    'H': '#1F77B4',
+
+    # Negatively charged
+    'D': '#D62728',
+    'E': '#D62728'
+}
+
+            logo = logomaker.Logo(
+    logo_matrix,
+    ax=ax,
+    color_scheme=amino_acid_colors
+)
             ax.set_xlabel("Amino Acid Position")
             ax.set_ylabel("Information Content (bits)")
             ax.set_title("Protein Sequence Logo")
