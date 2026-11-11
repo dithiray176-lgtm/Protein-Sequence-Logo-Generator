@@ -20,6 +20,9 @@ st.markdown(
     "Analyze aligned protein sequences and visualize "
     "amino acid conservation using sequence logos."
 )
+
+# Sample FASTA download
+
 sample_fasta = """>Protein1
 MKTLLLTLVV
 >Protein2
@@ -36,6 +39,9 @@ st.download_button(
     file_name="sample_proteins.fasta",
     mime="text/plain"
 )
+
+# FASTA upload
+
 uploaded_file = st.file_uploader(
     "Upload your protein FASTA file",
     type=["fasta", "fa", "txt"]
@@ -108,15 +114,8 @@ if uploaded_file is not None:
 
             display_frequency = frequency_matrix.copy()
             display_frequency.index = range(1, sequence_length + 1)
-            information_df = pd.DataFrame({
-    "Position": range(1, sequence_length + 1),
-    "Information Content (bits)": information
-})
 
-st.dataframe(
-    information_df,
-    hide_index=True
-)
+            st.dataframe(display_frequency)
 
             # Probability calculation
 
@@ -145,6 +144,17 @@ st.dataframe(
                 for h in entropy
             ]
 
+            # Display information content
+
+            st.subheader("Information Content")
+
+            information_df = pd.DataFrame({
+                "Position": range(1, sequence_length + 1),
+                "Information Content (bits)": information
+            })
+
+            st.dataframe(information_df, hide_index=True)
+
             # Logo matrix
 
             logo_matrix = probabilities.mul(
@@ -152,58 +162,52 @@ st.dataframe(
                 axis=0
             )
 
-           st.subheader("Information Content")
-
-information_df = pd.DataFrame({
-    "Position": range(1, sequence_length + 1),
-    "Information Content (bits)": information
-})
-
-st.dataframe(information_df, hide_index=True)
-
             # Sequence logo visualization
 
-st.subheader("Generated Protein Sequence Logo")
+            st.subheader("Generated Protein Sequence Logo")
 
             fig, ax = plt.subplots(
                 figsize=(max(12, sequence_length * 0.8), 6)
             )
 
+            # Custom amino acid colours
+
             amino_acid_colors = {
-    # Hydrophobic
-    'A': '#808080',
-    'V': '#808080',
-    'L': '#808080',
-    'I': '#808080',
-    'M': '#808080',
-    'F': '#808080',
-    'W': '#808080',
-    'P': '#808080',
+                # Hydrophobic
+                'A': '#808080',
+                'V': '#808080',
+                'L': '#808080',
+                'I': '#808080',
+                'M': '#808080',
+                'F': '#808080',
+                'W': '#808080',
+                'P': '#808080',
 
-    # Polar
-    'S': '#2CA02C',
-    'T': '#2CA02C',
-    'N': '#2CA02C',
-    'Q': '#2CA02C',
-    'C': '#2CA02C',
-    'Y': '#2CA02C',
-    'G': '#2CA02C',
+                # Polar
+                'S': '#2CA02C',
+                'T': '#2CA02C',
+                'N': '#2CA02C',
+                'Q': '#2CA02C',
+                'C': '#2CA02C',
+                'Y': '#2CA02C',
+                'G': '#2CA02C',
 
-    # Positively charged
-    'K': '#1F77B4',
-    'R': '#1F77B4',
-    'H': '#1F77B4',
+                # Positively charged
+                'K': '#1F77B4',
+                'R': '#1F77B4',
+                'H': '#1F77B4',
 
-    # Negatively charged
-    'D': '#D62728',
-    'E': '#D62728'
-}
+                # Negatively charged
+                'D': '#D62728',
+                'E': '#D62728'
+            }
 
             logo = logomaker.Logo(
-    logo_matrix,
-    ax=ax,
-    color_scheme=amino_acid_colors
-)
+                logo_matrix,
+                ax=ax,
+                color_scheme=amino_acid_colors
+            )
+
             ax.set_xlabel("Amino Acid Position")
             ax.set_ylabel("Information Content (bits)")
             ax.set_title("Protein Sequence Logo")
@@ -219,7 +223,7 @@ st.subheader("Generated Protein Sequence Logo")
 
             st.pyplot(fig)
 
-            # Download logo
+            # Download sequence logo
 
             image_buffer = BytesIO()
 
