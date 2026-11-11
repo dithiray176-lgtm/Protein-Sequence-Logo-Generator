@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -19,7 +20,22 @@ st.markdown(
     "Analyze aligned protein sequences and visualize "
     "amino acid conservation using sequence logos."
 )
+sample_fasta = """>Protein1
+MKTLLLTLVV
+>Protein2
+MKTLLLALVV
+>Protein3
+MKTLLLTLVA
+>Protein4
+MKTLLLTLVV
+"""
 
+st.download_button(
+    "Download Sample FASTA",
+    data=sample_fasta,
+    file_name="sample_proteins.fasta",
+    mime="text/plain"
+)
 uploaded_file = st.file_uploader(
     "Upload your protein FASTA file",
     type=["fasta", "fa", "txt"]
