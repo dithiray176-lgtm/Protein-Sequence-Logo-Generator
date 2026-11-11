@@ -1,0 +1,7 @@
+
+biopython
+streamlit
+matplotlib
+numpy
+pandas
+logomaker
