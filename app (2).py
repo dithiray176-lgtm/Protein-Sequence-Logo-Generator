@@ -1,10 +1,10 @@
 
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import logomaker
 import math
-import numpy as np
 
 from Bio import SeqIO
 from io import StringIO, BytesIO
@@ -17,10 +17,13 @@ st.set_page_config(
 
 st.title("🧬 Protein Sequence Logo Generator")
 
-st.write("Upload aligned protein sequences in FASTA format.")
+st.markdown(
+    "Analyze aligned protein sequences and visualize "
+    "amino acid conservation using sequence logos."
+)
 
 uploaded_file = st.file_uploader(
-    "Upload FASTA file",
+    "Upload your protein FASTA file",
     type=["fasta", "fa", "txt"]
 )
 
@@ -42,41 +45,66 @@ if uploaded_file is not None:
         valid_amino_acids = set("ACDEFGHIKLMNPQRSTVWY")
 
         if not sequences:
-            st.error("No sequences found.")
+            st.error("No FASTA sequences found.")
 
         elif any(
             not seq or set(seq) - valid_amino_acids
             for seq in sequences
         ):
-            st.error("Invalid amino acid characters detected.")
+            st.error("Invalid or empty protein sequence detected.")
 
         elif len(set(map(len, sequences))) != 1:
-            st.error("Sequences must have equal lengths and be aligned.")
+            st.error("All sequences must be aligned and have equal lengths.")
 
         else:
 
-            st.success(f"{len(sequences)} sequences processed successfully!")
+            num_sequences = len(sequences)
+            sequence_length = len(sequences[0])
+
+            st.success(
+                f"Successfully processed {num_sequences} sequences!"
+            )
+
+            # Sequence statistics
+
+            col1, col2, col3 = st.columns(3)
+
+            col1.metric("Number of Sequences", num_sequences)
+            col2.metric("Sequence Length", sequence_length)
+            col3.metric("Amino Acids", 20)
 
             amino_acids = "ACDEFGHIKLMNPQRSTVWY"
 
+            # Frequency calculation
+
             frequency_matrix = pd.DataFrame(
                 0,
-                index=range(len(sequences[0])),
+                index=range(sequence_length),
                 columns=list(amino_acids)
             )
 
-            for position in range(len(sequences[0])):
+            for position in range(sequence_length):
 
                 for sequence in sequences:
 
                     aa = sequence[position]
-
                     frequency_matrix.loc[position, aa] += 1
+
+            st.subheader("Amino Acid Frequency")
+
+            display_frequency = frequency_matrix.copy()
+            display_frequency.index = range(1, sequence_length + 1)
+
+            st.dataframe(display_frequency)
+
+            # Probability calculation
 
             probabilities = frequency_matrix.div(
                 frequency_matrix.sum(axis=1),
                 axis=0
             )
+
+            # Shannon entropy
 
             entropy = []
 
@@ -89,31 +117,38 @@ if uploaded_file is not None:
 
                 entropy.append(h)
 
+            # Information content
+
             information = [
-                math.log2(20) - h
+                max(0, math.log2(20) - h)
                 for h in entropy
             ]
+
+            # Logo matrix
 
             logo_matrix = probabilities.mul(
                 information,
                 axis=0
             )
 
-            st.subheader("Amino Acid Frequency")
-            st.dataframe(frequency_matrix)
-
             st.subheader("Information Content")
 
-            st.dataframe(pd.DataFrame({
-                "Position": range(1, len(information) + 1),
+            information_df = pd.DataFrame({
+                "Position": range(1, sequence_length + 1),
                 "Information Content (bits)": information
-            }))
+            })
+
+            st.dataframe(information_df)
+
+            # Sequence logo visualization
 
             st.subheader("Generated Protein Sequence Logo")
 
-            fig, ax = plt.subplots(figsize=(14, 6))
+            fig, ax = plt.subplots(
+                figsize=(max(12, sequence_length * 0.8), 6)
+            )
 
-            logomaker.Logo(
+            logo = logomaker.Logo(
                 logo_matrix,
                 ax=ax,
                 color_scheme="chemistry"
@@ -123,7 +158,18 @@ if uploaded_file is not None:
             ax.set_ylabel("Information Content (bits)")
             ax.set_title("Protein Sequence Logo")
 
+            ax.set_xticks(range(sequence_length))
+            ax.set_xticklabels(range(1, sequence_length + 1))
+
+            ax.set_ylim(0, math.log2(20) + 0.2)
+
+            ax.grid(axis="y", alpha=0.2)
+
+            plt.tight_layout()
+
             st.pyplot(fig)
+
+            # Download logo
 
             image_buffer = BytesIO()
 
@@ -142,6 +188,15 @@ if uploaded_file is not None:
             )
 
             plt.close(fig)
+
+            # Download frequency table
+
+            st.download_button(
+                "Download Frequency Table",
+                data=frequency_matrix.to_csv().encode("utf-8"),
+                file_name="amino_acid_frequency.csv",
+                mime="text/csv"
+            )
 
     except Exception as e:
 
